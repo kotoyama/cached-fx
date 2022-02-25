@@ -11,32 +11,32 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: pnpm/action-setup@v2.1.0
+      - uses: actions/setup-node@v1
         with:
           version: 16.x
       - name: Size Checking
         run: |
-          pnpm install
-          pnpm size
+          yarn install
+          yarn size
   test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: pnpm/action-setup@v2.1.0
+      - uses: actions/setup-node@v1
         with:
           version: 16.x
       - name: Run tests
         run: |
-          pnpm install
-          pnpm test
+          yarn install
+          yarn test
   lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: pnpm/action-setup@v2.1.0
+      - uses: actions/setup-node@v1
         with:
           version: 16.x
       - name: Linting
         run: |
-          pnpm install
-          pnpm lint
+          yarn install
+          yarn lint
