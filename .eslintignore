@@ -1,0 +1,4 @@
+dist
+*.spec.ts
+coverage
+jest.config.js
