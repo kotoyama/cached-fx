@@ -9,7 +9,7 @@ import {
 } from 'effector'
 import { createCachedEffect } from './index'
 
-describe('createRequestFx', () => {
+describe('createCachedEffect', () => {
   test('should be defined', () => {
     expect(createCachedEffect).toBeDefined()
   })
@@ -38,7 +38,7 @@ describe('createRequestFx', () => {
 
 let scope: Scope
 
-describe('createRequestFx (forked scope)', () => {
+describe('createCachedEffect (forked scope)', () => {
   beforeEach(() => {
     scope = fork()
   })
