@@ -14,7 +14,7 @@
 
 Sometimes you may need to cache the data you retrieve through API calls, but if you are working with Effector as a state manager, there is no way to do that in a regular Effect out of the box.
 
-This package is a tiny cacheable wrapper over [createEffect](https://effector.dev/docs/api/effector/createeffect) factory. It uses the JS `Map` object to store data under the hood. You need an [effector](https://effector.dev) as a peer-dependency.
+This package is a tiny cacheable wrapper over [createEffect](https://effector.dev/docs/api/effector/createeffect) factory. It uses the [Map](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map) object to store data under the hood. You need an [effector](https://effector.dev) as a peer-dependency.
 
 > Work in progress. This project is still in alpha version. It may work as you expect, or it may not.
 
