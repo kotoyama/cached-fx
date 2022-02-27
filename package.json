@@ -1,6 +1,6 @@
 {
   "name": "cached-fx",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Wrapper over createEffect factory with cache",
   "main": "./dist/cached-fx.cjs.js",
   "module": "./dist/index.js",
