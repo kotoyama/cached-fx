@@ -5,25 +5,49 @@ import {
   createStore,
   createEvent,
   createEffect,
+  createDomain,
 } from 'effector'
 import { createCachedEffect } from './index'
 
-let scope: Scope
-
-describe('forked scope', () => {
-  beforeEach(() => {
-    scope = fork()
-  })
-
+describe('createRequestFx', () => {
   test('should be defined', () => {
     expect(createCachedEffect).toBeDefined()
+  })
+
+  test('should accept handler', async () => {
+    const fetchHandler = jest.fn(() => Promise.resolve('data'))
+    const fetchFx = createCachedEffect(fetchHandler)
+    const result = await fetchFx(1)
+    expect(result).toEqual('data')
+  })
+
+  test('should accept config', async () => {
+    const fetchHandler = jest.fn(() => Promise.resolve('data'))
+    const fetchFx = createCachedEffect({ handler: fetchHandler })
+    const result = await fetchFx(1)
+    expect(result).toEqual('data')
+  })
+
+  test('should accept domain', () => {
+    const fetchHandler = jest.fn(() => Promise.resolve())
+    const domain = createDomain()
+    const fetchFx = createCachedEffect({ domain, handler: fetchHandler })
+    expect(domain.history.effects.has(fetchFx)).toBeTruthy()
+  })
+})
+
+let scope: Scope
+
+describe('createRequestFx (forked scope)', () => {
+  beforeEach(() => {
+    scope = fork()
   })
 
   test('should return data from handler', async () => {
     const watcher = jest.fn()
     const fetchHandler = jest.fn(() => Promise.resolve(1))
 
-    const fetchFx = createCachedEffect({ handler: fetchHandler })
+    const fetchFx = createCachedEffect(fetchHandler)
     const $data = createStore(0).on(fetchFx.doneData, (_, data) => data)
 
     fetchFx.watch(watcher)
@@ -36,7 +60,7 @@ describe('forked scope', () => {
 
   test('should call the handler if there is no cached data', async () => {
     const fetchHandler = jest.fn(() => Promise.resolve(false))
-    const fetchFx = createCachedEffect({ handler: fetchHandler })
+    const fetchFx = createCachedEffect(fetchHandler)
 
     await allSettled(fetchFx, { scope, params: { offset: 0, limit: 10 } })
 
@@ -55,18 +79,16 @@ describe('forked scope', () => {
       (ms: number) => new Promise((rs) => setTimeout(rs, ms)),
     )
 
-    await Promise.all([
-      allSettled(fetchFx, { scope, params }),
-      allSettled(sleepFx, { scope, params: 1000 }),
-      allSettled(fetchFx, { scope, params }),
-    ])
+    await allSettled(fetchFx, { scope, params })
+    await allSettled(sleepFx, { scope, params: 1000 })
+    await allSettled(fetchFx, { scope, params })
 
     expect(fetchHandler).toHaveBeenCalledTimes(2)
   })
 
   test('should re-call the handler if params changed', async () => {
     const fetchHandler = jest.fn(() => Promise.resolve('cheburek'))
-    const fetchFx = createCachedEffect({ handler: fetchHandler })
+    const fetchFx = createCachedEffect(fetchHandler)
 
     await allSettled(fetchFx, { scope, params: { offset: 20, limit: 10 } })
     await allSettled(fetchFx, { scope, params: { offset: 30, limit: 10 } })
@@ -78,7 +100,7 @@ describe('forked scope', () => {
     const params = { offset: 20, limit: 10 }
     const fetchHandler = jest.fn(() => Promise.resolve('lol'))
 
-    const fetchFx = createCachedEffect({ handler: fetchHandler })
+    const fetchFx = createCachedEffect(fetchHandler)
 
     await allSettled(fetchFx, { scope, params })
     await allSettled(fetchFx, { scope, params })
@@ -91,8 +113,8 @@ describe('forked scope', () => {
     const fetchHandler1 = jest.fn(() => Promise.resolve(123))
     const fetchHandler2 = jest.fn(() => Promise.resolve(456))
 
-    const fetchFx1 = createCachedEffect({ handler: fetchHandler1 })
-    const fetchFx2 = createCachedEffect({ handler: fetchHandler2 })
+    const fetchFx1 = createCachedEffect(fetchHandler1)
+    const fetchFx2 = createCachedEffect(fetchHandler2)
 
     await allSettled(fetchFx1, { scope, params })
     await allSettled(fetchFx2, { scope, params })
@@ -111,11 +133,9 @@ describe('forked scope', () => {
       clearOn: clear,
     })
 
-    await Promise.all([
-      allSettled(fetchFx, { scope, params }),
-      allSettled(clear, { scope }),
-      allSettled(fetchFx, { scope, params }),
-    ])
+    await allSettled(fetchFx, { scope, params })
+    await allSettled(clear, { scope })
+    await allSettled(fetchFx, { scope, params })
 
     expect(fetchHandler).toHaveBeenCalledTimes(2)
   })
