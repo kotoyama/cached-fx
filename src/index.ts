@@ -1,18 +1,44 @@
-import { createDomain, forward, Event, Domain } from 'effector'
+import { createDomain, forward, Event, Domain, Effect } from 'effector'
 
 export type CachedData<Result> = {
   data: Result
   createdAt: number
 }
 
-export type Params<Payload, Result> = {
-  handler: (params: Payload) => Promise<Result> | Result
+export type Handler<Payload, Result> = (
+  params: Payload,
+) => Promise<Result> | Result
+
+export interface Config<Payload, Result> {
+  handler: Handler<Payload, Result>
   domain?: Domain
   clearOn?: Event<any>
   expiresIn?: number
 }
 
+export interface CachedEffect<Payload, Result> extends Effect<Payload, Result> {
+  (payload: Payload): Promise<Result>
+}
+
 const defaultDomain = createDomain()
+
+const getParams = <Payload, Result>(
+  params: Config<Payload, Result> | Handler<Payload, Result>,
+): Config<Payload, Result> =>
+  typeof params === 'function'
+    ? {
+        handler: params,
+        domain: defaultDomain,
+      }
+    : params
+
+/**
+ * Creates a cached effect
+ * @param handler function to handle effect calls
+ */
+export function createCachedEffect<Payload, Result>(
+  handler: Handler<Payload, Result>,
+): CachedEffect<Payload, Result>
 
 /**
  * Creates a cached effect
@@ -21,12 +47,19 @@ const defaultDomain = createDomain()
  * @param clearOn clock unit which fires the cache clearing
  * @param expiresIn how long the data will last in the cache (in ms). 5 mins by default
  */
-export function createCachedEffect<Payload, Result>({
-  handler,
-  clearOn,
-  expiresIn = 300000,
-  domain = defaultDomain,
-}: Params<Payload, Result>) {
+export function createCachedEffect<Payload, Result>(
+  config: Config<Payload, Result>,
+): CachedEffect<Payload, Result>
+
+export function createCachedEffect<Payload, Result>(
+  params: Config<Payload, Result> | Handler<Payload, Result>,
+): CachedEffect<Payload, Result> {
+  const {
+    handler,
+    clearOn,
+    expiresIn = 300000,
+    domain = defaultDomain,
+  } = getParams<Payload, Result>(params)
   const cache = new Map()
   const clearCache = domain.createEvent()
 
